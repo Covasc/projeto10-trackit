@@ -4,24 +4,45 @@ import styled from "styled-components";
 import { BsCheckSquareFill } from "react-icons/bs";
 import { useState, useEffect } from "react";
 import UserContext from '../contexts/UserContext';
+import PercentageContext from "../contexts/PercentageContext";
 import { useContext } from "react";
 import  DayJS from 'react-dayjs';
 import axios from "axios";
+import dayjs from "dayjs";
+import 'dayjs/locale/pt-br';
 
 
-function TodayHabit ( {habit} ) {
+function TodayHabit ( {habit, reload, setReload} ) {
 
+    const { userInfo } = useContext(UserContext);
     const { id, name, done, currentSequence, highestSequence } = habit;
+
+    function check () {
+
+        const config = { headers: {Authorization:`Bearer ${userInfo.token}`} };
+
+        if (done) {
+            const promisse = axios.post(`https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${id}/uncheck`,{}, config)
+            promisse.then((response) => {
+                setReload(!reload);
+            });
+        } else {
+            const promisse = axios.post(`https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${id}/check`,{}, config)
+            promisse.then((response) => {
+                setReload(!reload);
+            });
+        };
+    }
 
     return (
         <Habit>
         <div>
             <h1>{name}</h1>
-            <p>Sequencia atual: {currentSequence} dias</p>
-            <p>Seu record: {highestSequence} dias</p>
+            <p>Sequencia atual:<span className={done === true ? "green" : "gray"}> {currentSequence} dias</span></p>
+            <p>Seu record:<span className={currentSequence === highestSequence && done === true ? "green" : "gray"}> {highestSequence} dias</span></p>
         </div>
         <div>
-            <BsCheckSquareFill size="70px" color={ done ? "#8FC549" : "#EBEBEB"}/>
+            <BsCheckSquareFill onClick={check} size="70px" color={ done ? "#8FC549" : "#EBEBEB"}/>
         </div>
     </Habit>
     );
@@ -29,29 +50,44 @@ function TodayHabit ( {habit} ) {
 
 export default function Today() {
 
-    let date = Date();
+    let date = (dayjs().locale("pt-br").format("dddd, DD/MM"));
+    let firstL = date[0].toUpperCase();
+    let restL = date.substring(1);
+    let newDate = firstL + restL;
+
     const { userInfo } = useContext(UserContext);
+    const {percentage, setPercentage} = useContext(PercentageContext);
+    console.log(percentage);
     const [habitList, setHabitList] = useState([]);
+    const [reload, setReload] = useState(false);
 
     useEffect(() => {
         const config = { headers: {Authorization:`Bearer ${userInfo.token}`} };
         const promisse = axios.get("https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/today", config);
         promisse.then((response) => {
             setHabitList(response.data);
+            let cont = 0;
+            response.data.map((obj) => {
+                obj.done ? cont = cont + 1 : cont = cont + 0;
+            })
+            if (response.data.length !== 0) {
+            let displayPercentage = Number(((cont / response.data.length)*100).toFixed(0));
+            setPercentage(displayPercentage);
+            }
         });
-    } , []);
+    } , [reload]);
 
     return (
         <Thisday>
             <Header />
             <Introduction>
-                <DayJS format="dddd, DD/MM" lelement="p">{date}</DayJS>
-                <p>Nenhum hábito concluído ainda</p>
+                <h1>{newDate}</h1>
+                {percentage === 0 ? <p>Nenhum hábito concluído ainda</p> : <p className="green">{`${percentage}% dos hábitos concluídos`}</p>}
             </Introduction>
             <Message>
-                { habitList === [] ?
+                { habitList.length === 0 ?
                 <p>Você está sem tarefas registradas.</p> :
-                habitList.map( (habit) =>  <TodayHabit habit={habit}/> ) }
+                habitList.map( (habit) =>  <TodayHabit reload={reload} setReload={setReload} habit={habit}/> ) }
             </Message>
             <Footer />
         </Thisday>
@@ -77,13 +113,14 @@ const Introduction = styled.div`
     font-size: 23px;
     color: #126BA5;
 
-    p {
-        margin-top: 4px;
+    .green {
+        color: #8FC549;
     }
 
-    p:nth-child(2) {
+    p {
+        margin-top: 4px;
         font-size: 18px;
-        color: #BABABA; 
+        color: #BABABA;
     }
 `
 const Message = styled.div`
@@ -102,11 +139,23 @@ const Habit = styled.div`
     padding: 13px;
     margin-bottom: 10px;
 
+    > div:nth-child(2){
+        cursor: pointer;
+    }
+
     h1 {
         margin-bottom: 10px;
     }
 
     p {
         font-size: 13px;
+    }
+
+    .green {
+        color: #8FC549;
+    }
+
+    .gray {
+        color: #EBEBEB;
     }
 `

@@ -7,14 +7,17 @@ import History from './History';
 import Today from './Today';
 import UserContext from '../contexts/UserContext';
 import { useState } from 'react';
+import PercentageContext from '../contexts/PercentageContext';
 
 
 export default function App () {
 
-    const [userInfo, setUserInfo] = useState({})
+    const [userInfo, setUserInfo] = useState({});
+    const [percentage, setPercentage] = useState(0);
 
     return (
         <UserContext.Provider value={{userInfo, setUserInfo}}>
+        <PercentageContext.Provider value= {{percentage, setPercentage}}>
             <BrowserRouter>
                 <Container>
                     <Routes>    
@@ -26,6 +29,7 @@ export default function App () {
                     </Routes>
                 </Container>
             </BrowserRouter>
+        </PercentageContext.Provider>
         </UserContext.Provider>
     );
 }

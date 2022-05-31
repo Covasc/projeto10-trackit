@@ -10,7 +10,7 @@ import axios from "axios";
 import { ThreeDots } from 'react-loader-spinner';
 
 
-function DayButton ({day, number, days, setDays}) {
+function DayButton ({day, number, days, setDays, reOpen, setReOpen}) {
 
     const [color, setColor] = useState("")
 
@@ -25,14 +25,12 @@ function DayButton ({day, number, days, setDays}) {
     }
 
     return (
-        <button className={color} onClick={selected}>{day}</button>
+        <button className={reOpen === true && days.includes(number) ? "Selected" : color} onClick={selected}>{day}</button>
     )
 }
 
-function CreationMenu ({setCreation, reload, setReload}) {
+function CreationMenu ({setCreation, reload, setReload, entry, setEntry, days, setDays, reOpen, setReOpen}) {
 
-    const [days, setDays] = useState([]);
-    const [entry, setEntry] = useState("");
     const [disable, setDisable] = useState(false);
     const { userInfo } = useContext(UserContext);
 
@@ -43,12 +41,21 @@ function CreationMenu ({setCreation, reload, setReload}) {
         const promisse = axios.post("https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits", objToSend, config);
         promisse.then(() =>{
             setDisable(false);
-            setCreation(undefined);
+            setCreation(undefined);  
+            setDays([]);
+            setEntry("");
+            setReOpen(false);         
             setReload(!reload);
         });
         promisse.catch(() => {
+            alert("Informações incorretas. Verifique as entradas e tente novamente");
             setDisable(false);
         })
+    }
+
+    function closeCreation () {
+        setReOpen(true);
+        setCreation(undefined);
     }
 
     return (
@@ -61,17 +68,17 @@ function CreationMenu ({setCreation, reload, setReload}) {
                 value={entry}>
                 </input>
                 <WeekDay>
-                    <DayButton day="D" number="0" days={days} setDays={setDays} />
-                    <DayButton day="S" number="1" days={days} setDays={setDays} />
-                    <DayButton day="T" number="2" days={days} setDays={setDays} />
-                    <DayButton day="Q" number="3" days={days} setDays={setDays} />
-                    <DayButton day="Q" number="4" days={days} setDays={setDays} />
-                    <DayButton day="S" number="5" days={days} setDays={setDays} />
-                    <DayButton day="S" number="6" days={days} setDays={setDays} />
+                    <DayButton day="D" number="0" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="S" number="1" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="T" number="2" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="Q" number="3" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="Q" number="4" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="S" number="5" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
+                    <DayButton day="S" number="6" days={days} setDays={setDays} reOpen={reOpen} setReOpen={setReOpen} />
                 </WeekDay>
                 <Confirm>
-                    <button disabled={disable}>Cancel</button>
-                    <button disabled={disable} onClick={sendObject} >{ disable === false ? "Salvar" : <ThreeDots color="white" height={40} width={40} />}</button>
+                    <button disabled={disable} onClick={closeCreation}>Cancel</button>
+                    <button disabled={disable} onClick={sendObject}>{ disable === false ? "Salvar" : <ThreeDots color="white" height={40} width={40} />}</button>
                 </Confirm>
             </div>
         </Creation>
@@ -83,13 +90,18 @@ function HabitList ( {list, reload, setReload} ) {
     const { userInfo } = useContext(UserContext);
 
     function deleteHabit () {
-        const deleteURL = `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${list.id}`;
-        const config = { headers: {Authorization:`Bearer ${userInfo.token}`} };
-        const promisse = axios.delete(deleteURL, config);
-        promisse.then(() =>{
-            alert("Hábito excluído.");
-            setReload(!reload);
-        });
+
+        const confirmExclusion = window.confirm(`Deseja remover o hábito "${list.name}"?`);
+
+        if (confirmExclusion) {
+            const deleteURL = `https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/${list.id}`;
+            const config = { headers: {Authorization:`Bearer ${userInfo.token}`} };
+            const promisse = axios.delete(deleteURL, config);
+            promisse.then(() =>{
+                alert("Hábito excluído.");
+                setReload(!reload);
+            });    
+        }
     }
 
     return (
@@ -115,6 +127,10 @@ function HabitList ( {list, reload, setReload} ) {
 
 export default function Habits () {
 
+    const [reOpen, setReOpen] = useState(false);
+    const [days, setDays] = useState([]);
+    console.log(days);
+    const [entry, setEntry] = useState("");
     const [creation, setCreation] = useState(undefined);
     const [renderList, setRenderList] = useState([]);
     const [reload, setReload] = useState(true);
@@ -139,11 +155,11 @@ export default function Habits () {
             <Header />
             <Introduction>
                 <p>Meus hábitos</p>
-                <BsPlusSquareFill onClick={openCreation} size="35px" color="#52B6FF"/>
+                <ColocarMouse onClick={openCreation} size="35px" color="#52B6FF"/>
             </Introduction>
-            {creation !== undefined && <CreationMenu setCreation={setCreation} setReload={setReload} reload={reload}/>}
+            {creation !== undefined && <CreationMenu reOpen={reOpen} setReOpen={setReOpen} days={days} setDays={setDays} entry={entry} setEntry={setEntry} setCreation={setCreation} setReload={setReload} reload={reload}/>}
             <HabitPlace>
-                {renderList === [] ? 
+                {renderList.length === 0 ? 
                 <p>Você ainda não tem nenhum hábito cadastrado. Adicione um hábito para começar a trackear!</p> : 
                 renderList.map( (list) => <HabitList list={list} setReload={setReload} reload={reload}/>)}    
             </HabitPlace>
@@ -151,6 +167,10 @@ export default function Habits () {
         </Habit>
     )
 }
+
+const ColocarMouse = styled(BsPlusSquareFill)`
+    cursor: pointer;
+`
 
 const Habit = styled.div`
     display: flex;
@@ -186,6 +206,10 @@ const Creation = styled.div`
     flex-direction: column;
     align-items: center;
     padding: 0 17px;
+
+    button {
+        cursor: pointer;
+    }
 
     > div {
         position: relative;
@@ -257,6 +281,7 @@ const HabitSaved = styled.div`
     }
 `
 const Trash = styled.div`
+    cursor: pointer;
     position: absolute;
     top: 10px;
     right: 10px;
@@ -286,6 +311,7 @@ const Confirm = styled.div`
     right: 18px;
 
     button:nth-child(1) {
+        cursor: pointer;
         font-size: 16px;
         background-color: white;
         color: #52B6FF;
@@ -294,6 +320,7 @@ const Confirm = styled.div`
     }
 
     button:nth-child(2) {
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;

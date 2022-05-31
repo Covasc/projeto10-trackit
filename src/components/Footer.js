@@ -1,11 +1,15 @@
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import 'react-circular-progressbar/dist/styles.css';
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import PercentageContext from "../contexts/PercentageContext";
+import { useContext } from "react";
+
 
 export default function Footer () {
 
     const navigate = useNavigate();
-    let percentage = 50;
+    const { percentage } = useContext(PercentageContext);
 
     return (
         <Foot>
@@ -42,8 +46,13 @@ const Foot = styled.div`
     background-color: white;
     font-size: 18px;
     color: #52B6FF;
+
+    > p {
+        cursor: pointer;
+    }
 `
 const Circular = styled.div`
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;

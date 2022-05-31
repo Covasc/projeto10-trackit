@@ -6,6 +6,8 @@ import axios from "axios";
 import UserContext from '../contexts/UserContext';
 import { useContext } from "react";
 import { ThreeDots } from 'react-loader-spinner';
+import dayjs from "dayjs";
+import 'dayjs/locale/pt-br';
 
 
 export default function Login () {
@@ -13,6 +15,7 @@ export default function Login () {
     let objToSend = {email:"" , password:""};
     const { setUserInfo } = useContext(UserContext);
     const [disable, setDisable] = useState(false);
+    console.log(dayjs().locale("pt-br").format("dddd, DD/MM"));
 
     let navigate = useNavigate();
     const [email, setEmail] = useState("");
