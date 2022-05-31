@@ -1,7 +1,6 @@
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { BsTextCenter } from "react-icons/bs";
 
 export default function Footer () {
 
@@ -22,7 +21,6 @@ export default function Footer () {
                     textColor: "#fff",
                     pathColor: "#fff",
                     trailColor: "transparent",
-                    verticalAlign: "middle"
                     })}
                 />
             </Circular>
