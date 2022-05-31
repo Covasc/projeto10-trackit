@@ -6,6 +6,26 @@ import { useState, useEffect } from "react";
 import UserContext from '../contexts/UserContext';
 import { useContext } from "react";
 import  DayJS from 'react-dayjs';
+import axios from "axios";
+
+
+function TodayHabit ( {habit} ) {
+
+    const { id, name, done, currentSequence, highestSequence } = habit;
+
+    return (
+        <Habit>
+        <div>
+            <h1>{name}</h1>
+            <p>Sequencia atual: {currentSequence} dias</p>
+            <p>Seu record: {highestSequence} dias</p>
+        </div>
+        <div>
+            <BsCheckSquareFill size="70px" color={ done ? "#8FC549" : "#EBEBEB"}/>
+        </div>
+    </Habit>
+    );
+}
 
 export default function Today() {
 
@@ -15,6 +35,10 @@ export default function Today() {
 
     useEffect(() => {
         const config = { headers: {Authorization:`Bearer ${userInfo.token}`} };
+        const promisse = axios.get("https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/habits/today", config);
+        promisse.then((response) => {
+            setHabitList(response.data);
+        });
     } , []);
 
     return (
@@ -25,27 +49,9 @@ export default function Today() {
                 <p>Nenhum hábito concluído ainda</p>
             </Introduction>
             <Message>
-                <Habit>
-                    <div>
-                        <h1>Comer bem</h1>
-                        <p>Sequencia atual: 3 dias</p>
-                        <p>Seu record: 5 dias</p>
-                    </div>
-                    <div>
-                        <BsCheckSquareFill size="70px" color="#EBEBEB"/>
-                    </div>
-                </Habit>
-                <Habit>
-                    <div>
-                        <h1>Comer bem</h1>
-                        <p>Sequencia atual: 3 dias</p>
-                        <p>Seu record: 5 dias</p>
-                    </div>
-                    <div>
-                        <BsCheckSquareFill size="70px" color="#EBEBEB"/>
-                    </div>
-                </Habit>
-                <p>Você está sem tarefas registradas.</p>
+                { habitList === [] ?
+                <p>Você está sem tarefas registradas.</p> :
+                habitList.map( (habit) =>  <TodayHabit habit={habit}/> ) }
             </Message>
             <Footer />
         </Thisday>

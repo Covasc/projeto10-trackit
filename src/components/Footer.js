@@ -10,7 +10,7 @@ export default function Footer () {
     return (
         <Foot>
             <p onClick={() => navigate('/habits')}>Hábitos</p>
-            <Circular>
+            <Circular onClick={() => navigate('/today')}>
                 <CircularProgressbar
                     value={percentage}
                     text="Hoje"
