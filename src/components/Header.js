@@ -1,23 +1,31 @@
 import styled from "styled-components";
 import UserContext from '../contexts/UserContext';
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 
 export default function Header () {
 
     const { userInfo } = useContext(UserContext);
     const image = userInfo.image;
+    const [ativo, setAtivo] = useState(false);
 
     return (
         <>
             <Head>
-                <h1>TrackIt</h1>
+                <Teste  ativo={ativo}></Teste>
+                <h1 onClick={() => {setAtivo(!ativo)}}>TrackIt</h1>
                 {/* recebe como props a imagem que vem no retorno do login */}
                 <img src={image} alt="Avatar" />
             </Head>
         </>
     );
 }
+
+const Teste = styled.div`
+    width: 20px;
+    height: 20px;
+    background-color: ${ (props) => (props.ativo ? "green" : "red") };
+`
 
 const Head = styled.div`
     display: flex;

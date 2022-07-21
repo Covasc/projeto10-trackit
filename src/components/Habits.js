@@ -24,9 +24,16 @@ function DayButton ({day, number, days, setDays, reOpen, setReOpen}) {
         }
     }
 
-    return (
-        <button className={reOpen === true && days.includes(number) ? "Selected" : color} onClick={selected}>{day}</button>
-    )
+    if (reOpen === true && days.includes(number)) {
+        return (
+            <button className="Selected" onClick={selected}>{day}</button>
+        );
+        
+    } else {
+        return (
+            <button className={color} onClick={selected}>{day}</button>
+        );   
+    }
 }
 
 function CreationMenu ({setCreation, reload, setReload, entry, setEntry, days, setDays, reOpen, setReOpen}) {
